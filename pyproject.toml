@@ -8,6 +8,7 @@ description = "A collection of utilities for managing licensing in projects comp
 requires-python = ">= 3.10"
 readme = "README.md"
 dependencies = [
+    "reuse~=6.0",
     "pydantic",
     "tomli; python_version<'3.11'",
 ]
