@@ -12,6 +12,8 @@ dependencies = [
     "pydantic",
     "tomli; python_version<'3.11'",
     "gitpython~=3.1",
+    "tomli-w",
+    "license-expression~=30.0",
 ]
 dynamic = ["version"]
 

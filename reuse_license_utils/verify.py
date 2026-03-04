@@ -2,7 +2,7 @@ import subprocess
 from pathlib import Path
 
 from reuse_license_utils.config import LicenseUtilsConfig
-from reuse_license_utils.identify_files import _expand_patterns, collect_reuse_toml_files
+from reuse_license_utils.files import _expand_patterns, collect_reuse_toml_files
 from reuse_license_utils.utils import get_reuse_command
 
 
@@ -11,7 +11,7 @@ def verify_repo(
     use_uv: bool = False,
     quiet: bool = False,
     check: bool = True,
-) -> tuple[bool, subprocess.CompletedProcess]:
+) -> subprocess.CompletedProcess:
     """Run `reuse lint` against the repository to verify REUSE compliance.
 
     Args:

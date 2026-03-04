@@ -2,7 +2,7 @@ import subprocess
 from pathlib import Path
 
 from reuse_license_utils.config import LicenseUtilsConfig
-from reuse_license_utils.identify_files import collect_header_files
+from reuse_license_utils.files import collect_header_files
 from reuse_license_utils.utils import get_reuse_command
 
 
