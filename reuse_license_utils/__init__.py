@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 Ian Lumsden
+#
+# SPDX-License-Identifier: MIT
+
 from reuse_license_utils.config import LicenseUtilsConfig, load_config
 from reuse_license_utils.files import collect_header_files, collect_reuse_toml_files, is_reuse_exempt
 from reuse_license_utils.headers import add_headers, add_headers_to_files, add_headers_to_group

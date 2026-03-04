@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 Ian Lumsden
+#
+# SPDX-License-Identifier: MIT
+
 import argparse
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -28,7 +32,7 @@ class Command(ABC):
         parser.add_argument(
             "--repo-root",
             "-r",
-            type=Path | None,
+            type=Path,
             default=None,
             help=(
                 "The path to the root of the repository for which to use REUSE."
@@ -38,7 +42,7 @@ class Command(ABC):
         parser.add_argument(
             "--config-file",
             "-c",
-            type=Path | None,
+            type=Path,
             default=None,
             help=(
                 "The path to the config file for reuse-license-utils."

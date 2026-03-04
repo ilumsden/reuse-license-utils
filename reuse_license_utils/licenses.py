@@ -1,8 +1,12 @@
+# SPDX-FileCopyrightText: 2026 Ian Lumsden
+#
+# SPDX-License-Identifier: MIT
+
 import subprocess
 import warnings
 from pathlib import Path
 
-from license_expression import ExpressionError, LicenseWithExceptionSymbol, get_spdx_licensing
+from license_expression import ExpressionError, LicenseSymbol, LicenseWithExceptionSymbol, get_spdx_licensing
 
 from reuse_license_utils.utils import get_reuse_command
 
@@ -38,10 +42,13 @@ def parse_spdx_identifier(license_id: str) -> list[SingleLicenseEntry]:
         raise ExpressionError(f"Invalid SPDX identifier: {license_id}") from e
 
     entries = []
-    for symbol in parsed_license.args:
+
+    args = parsed_license.args if parsed_license.args else [parsed_license]
+
+    for symbol in args:
         if isinstance(symbol, LicenseWithExceptionSymbol):
             entries.append((symbol.license_symbol.key, symbol.exception_symbol.key))
-        else:
+        elif isinstance(symbol, LicenseSymbol):
             entries.append(symbol.key)
 
     return entries

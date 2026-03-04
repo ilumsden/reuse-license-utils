@@ -49,6 +49,31 @@ source = "vcs"
 [tool.hatch.build.hooks.vcs]
 version-file = "reuse_license_utils/version.py"
 
+[tool.reuse-license-utils]
+default_copyright_holder = "Ian Lumsden"
+default_copyright_years = "2026"
+default_license_id = "MIT"
+
+[tool.reuse-license-utils.header_groups.source_files]
+include_patterns = [
+    "reuse_license_utils/**/*.py",
+]
+
+[[tool.reuse-license-utils.reuse_toml_paths]]
+path = ".gitignore"
+
+[[tool.reuse-license-utils.reuse_toml_paths]]
+path = ".python_version"
+
+[[tool.reuse-license-utils.reuse_toml_paths]]
+path = "pyproject.toml"
+
+[[tool.reuse-license-utils.reuse_toml_paths]]
+path = "README.md"
+
+[[tool.reuse-license-utils.reuse_toml_paths]]
+path = "uv.lock"
+
 [dependency-groups]
 format = ["ruff"]
 dev = [{ include-group="format" }]

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 Ian Lumsden
+#
+# SPDX-License-Identifier: MIT
+
 import argparse
 
 from reuse_license_utils.commands.download_licenses import DownloadLicensesCommand

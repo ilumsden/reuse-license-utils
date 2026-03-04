@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 Ian Lumsden
+#
+# SPDX-License-Identifier: MIT
+
 import argparse
 
 from reuse_license_utils.commands.command_base import Command
@@ -27,5 +31,5 @@ class VerifyCommand(Command):
             repo_root=self.repo_root,
             use_uv=args.use_uv,
             quiet=args.quiet,
-            check=True,
+            check=False,
         )

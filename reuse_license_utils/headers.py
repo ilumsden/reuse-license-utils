@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 Ian Lumsden
+#
+# SPDX-License-Identifier: MIT
+
 import subprocess
 from pathlib import Path
 
@@ -14,7 +18,7 @@ def add_headers_to_files(
     use_uv: bool = False,
     check: bool = True,
 ) -> subprocess.CompletedProcess:
-    """Add or update SPDX license headers in the specified files using `reuse addheader`.
+    """Add or update SPDX license headers in the specified files using `reuse annotate`.
 
     This function is safe to call multiple times on the same files because REUSE updates
     existing headers rather than duplicating them.
@@ -28,7 +32,7 @@ def add_headers_to_files(
         check: passed through to the `check` parameter of `subprocess.run`.
 
     Returns:
-        A subprocess.CompletedProcess instance containing information about the invocation of `reuse addheader`.
+        A subprocess.CompletedProcess instance containing information about the invocation of `reuse annotate`.
     """
     if not files:
         raise ValueError("No files provided to `add_headers_to_files`.")
@@ -38,7 +42,7 @@ def add_headers_to_files(
     return subprocess.run(
         [
             *reuse_cmd,
-            "addheader",
+            "annotate",
             "--year",
             year,
             "--copyright",

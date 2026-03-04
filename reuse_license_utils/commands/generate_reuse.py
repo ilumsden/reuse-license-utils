@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 Ian Lumsden
+#
+# SPDX-License-Identifier: MIT
+
 import argparse
 from pathlib import Path
 
@@ -15,7 +19,7 @@ class GenerateReuseTomlCommand(Command):
         self.parser.add_argument(
             "--reuse-toml-file",
             "-f",
-            type=Path | None,
+            type=Path,
             default=None,
             help=(
                 "The path to the REUSE.toml file that will be generated."
@@ -49,3 +53,4 @@ class GenerateReuseTomlCommand(Command):
         # Write the contents to REUSE.toml
         with reuse_toml_file_path.open("w") as f:
             f.write(reuse_toml_contents)
+        print(f"The REUSE.toml file has been written to {reuse_toml_file_path}.")

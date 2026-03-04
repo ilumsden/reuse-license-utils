@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 Ian Lumsden
+#
+# SPDX-License-Identifier: MIT
+
 from pathlib import Path
 
 import git
@@ -38,7 +42,7 @@ def collect_header_files(repo_root: Path, config: LicenseUtilsConfig, header_gro
         for matched_file in repo_root.glob(pattern):
             if not matched_file.is_file() or matched_file.resolve() in excluded:
                 continue
-            header_files.add(matched_file)
+            header_files.add(matched_file.resolve())
 
     # Sort and return the header files that have been matched
     return sorted(header_files)
@@ -64,7 +68,7 @@ def collect_reuse_toml_files(repo_root: Path, config: LicenseUtilsConfig) -> lis
     """
     # Get all files tracked by git using GitPython
     git_repo = git.Repo(repo_root)
-    tracked_files = [Path(entry.path) for entry in git_repo.index.entries.values()]
+    tracked_files = [Path(entry.path).resolve() for entry in git_repo.index.entries.values()]
     # Get all files that should have headers
     files_with_headers = set()
     for group_id in config.header_groups.keys():
