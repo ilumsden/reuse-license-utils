@@ -17,6 +17,9 @@ dependencies = [
 ]
 dynamic = ["version"]
 
+[project.scripts]
+reuse-license-utils = "reuse_license_utils.commands.main:main"
+
 [tool.hatch.version]
 source = "vcs"
 
