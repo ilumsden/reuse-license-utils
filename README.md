@@ -1,7 +1,7 @@
 # reuse-license-utils
 
 A command-line tool and Python library for managing [REUSE](https://reuse.software/)-compliant
-license headers and metadata in Python and C++ projects.
+license headers and metadata.
 
 ## Overview
 
