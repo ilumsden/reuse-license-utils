@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling", "hatch-vcs"]
+requires = ["hatchling>=1.22.2", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
@@ -7,6 +7,8 @@ name = "reuse-license-utils"
 description = "A collection of utilities for managing licensing in projects compliant with REUSE"
 requires-python = ">= 3.10"
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 dependencies = [
     "reuse~=6.0",
     "pydantic",
