@@ -1,5 +1,6 @@
-import subprocess
 from pathlib import Path
+
+import git
 
 from reuse_license_utils.config import REUSE_EXEMPT_DIRS, REUSE_EXEMPT_PREFIXES, LicenseUtilsConfig
 
@@ -61,28 +62,13 @@ def collect_reuse_toml_files(repo_root: Path, config: LicenseUtilsConfig) -> lis
     Returns:
         A sorted list of the files that need to be specified in REUSE.toml.
     """
-    # Run `git ls-files` to collect all files that are tracked by git
-    git_lsfiles_result = subprocess.run(
-        ["git", "ls-files"],
-        cwd=repo_root,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    # Produce an error if `git ls-files` failed
-    if git_lsfiles_result.returncode != 0:
-        raise RuntimeError(
-            f"Failed to get files for REUSE.toml because `git ls-files` failed:\n{git_lsfiles_result.stderr}",
-        )
-
-    # Convert the output of `git ls-files` to Path objects
-    tracked_files = [Path(line) for line in git_lsfiles_result.stdout.splitlines() if line.strip()]
-
+    # Get all files tracked by git using GitPython
+    git_repo = git.Repo(repo_root)
+    tracked_files = [Path(entry.path) for entry in git_repo.index.entries.values()]
     # Get all files that should have headers
     files_with_headers = set()
     for group_id in config.header_groups.keys():
         files_with_headers = files_with_headers | set(collect_header_files(repo_root, config, group_id))
-
     # Filter out files that should be excluded from REUSE.toml and return the rest
     return sorted(f for f in tracked_files if f not in files_with_headers and not is_reuse_exempt(f))
 
