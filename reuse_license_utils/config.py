@@ -46,7 +46,7 @@ class HeadersConfig(BaseModel):
 
 
 class ReuseTomlGenerationPatternConfig(BaseModel):
-    """Configuration for a single path in the generation of REUSE.toml"""
+    """Configuration for a single path in the generation of REUSE.toml."""
 
     path: str
     """The path or glob to add to REUSE.toml."""

@@ -3,7 +3,7 @@ from pathlib import Path
 
 from reuse_license_utils.config import LicenseUtilsConfig
 from reuse_license_utils.identify_files import collect_header_files
-from reuse_license_utils.utils import _get_reuse_command
+from reuse_license_utils.utils import get_reuse_command
 
 
 def add_headers_to_files(
@@ -33,7 +33,7 @@ def add_headers_to_files(
     if not files:
         raise ValueError("No files provided to `add_headers_to_files`.")
 
-    reuse_cmd = _get_reuse_command(use_uv)
+    reuse_cmd = get_reuse_command(use_uv)
 
     return subprocess.run(
         [
