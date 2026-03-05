@@ -137,11 +137,12 @@ rather than duplicated.
 reuse-license-utils add-headers [-r REPO_ROOT] [-c CONFIG_FILE] [-u]
 ```
 
-| Option                      | Short | Description                                                                        |
-| --------------------------- | ----- | ---------------------------------------------------------------------------------- |
-| `--repo-root REPO_ROOT`     | `-r`  | Path to the repository root. If not provided, autodetected via GitPython.          |
-| `--config-file CONFIG_FILE` | `-c`  | Path to the config file. If not provided, uses `pyproject.toml` under `repo-root`. |
-| `--use-uv`                  | `-u`  | Invoke REUSE using `uv` instead of invoking directly.                              |
+| Option                        | Short | Description                                                                                        |
+| ----------------------------- | ----- | -------------------------------------------------------------------------------------------------- |
+| `--repo-root REPO_ROOT`       | `-r`  | Path to the repository root. If not provided, autodetected via GitPython.                          |
+| `--config-file CONFIG_FILE`   | `-c`  | Path to the config file. If not provided, uses `pyproject.toml` under `repo-root`.                 |
+| `--use-uv`                    | `-u`  | Invoke REUSE using `uv` instead of invoking directly.                                              |
+| `--overwrite-copyright-lines` | `-o`  | Remove all SPDX-FileCopyrightText lines for a given copyright holder before generating new headers |
 
 ### `generate-toml`
 

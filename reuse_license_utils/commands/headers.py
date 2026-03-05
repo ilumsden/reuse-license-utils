@@ -19,11 +19,18 @@ class AddOrUpdateHeadersCommand(Command):
             action="store_true",
             help="If provided, invoke REUSE using `uv` instead of invoking directly",
         )
+        self.parser.add_argument(
+            "--overwrite-copyright-lines",
+            "-o",
+            action="store_true",
+            help="If provided, remove all SPDX-FileCopyrightText lines for a given copyright holder before generating new headers",  # noqa: E501
+        )
 
     def _run_impl(self, args: argparse.Namespace) -> None:
         add_headers(
             repo_root=self.repo_root,
             config=self.config,
             use_uv=args.use_uv,
+            overwrite_copyright_lines=args.overwrite_copyright_lines,
         )
         print("License headers have been added/updated for all your source code files!")

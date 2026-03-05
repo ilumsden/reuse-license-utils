@@ -2,12 +2,62 @@
 #
 # SPDX-License-Identifier: MIT
 
+import re
 import subprocess
 from pathlib import Path
 
 from reuse_license_utils.config import LicenseUtilsConfig
 from reuse_license_utils.files import collect_header_files
 from reuse_license_utils.utils import get_reuse_command
+
+
+def strip_copyright_lines(
+    files: list[Path],
+    copyright_holder: str,
+) -> None:
+    """Remove existing SPDX-FileCopyrightText lines matching the given copyright holder.
+
+    This function allow `reuse annotate` to add updated copyright lines to files
+    without duplicating old ones.
+
+    Args:
+        files (list[Path]): The list of files to process.
+        copyright_holder (str): The copyright holder to match against (e.g., "Global Computing Lab").
+    """
+    # Breakdown of regex:
+    #   * "^.+"": matches the comment character and any spaces at the start of the line
+    #   * "SPDX-FileCopyrightText:": matches that literal SPDX tag
+    #   * ".*": match all text between the tag and the copyright holder (namely the year or year range)
+    #   * "re.escape(copyright_holder)": escapes the copyright holder name in case it contains regex special characters
+    #   * ".*$": matches everything between the copyright holder name and the end of the line
+    #   * "\n": matches the newline so that no blank lines are left behind
+    #   * re.MULTILINE: makes "^" and "$" match the start and end of each line
+    pattern = re.compile(
+        r"^.+SPDX-FileCopyrightText:.*" + re.escape(copyright_holder) + r".*$\n?",
+        re.MULTILINE,
+    )
+
+    for file in files:
+        # Read the contents of the current file
+        original = file.read_text(encoding="utf-8")
+        # Apply the regex and replace all matches with empty strings
+        updated = pattern.sub("", original)
+        # Only overwrite the original file if there was text that matched the regex
+        if updated != original:
+            # Define a temporary file to save the contents without the copyright lines
+            tmp_path = file.with_suffix(file.suffix + ".tmp")
+            try:
+                # Write the contents w/o copyright lines to the temp file
+                with tmp_path.open("w", encoding="utf-8") as f:
+                    f.write(updated)
+                # If the contents were written successfully, rename the temp file to
+                # the original file's name to overwrite the original file
+                tmp_path.rename(file)
+            # If anything in the writing process failed, delete the temp file, and
+            # then re-raise the exception
+            except Exception:
+                tmp_path.unlink(missing_ok=True)
+                raise
 
 
 def add_headers_to_files(
@@ -17,6 +67,7 @@ def add_headers_to_files(
     license_id: str,
     use_uv: bool = False,
     check: bool = True,
+    overwrite_copyright_lines: bool = False,
 ) -> subprocess.CompletedProcess:
     """Add or update SPDX license headers in the specified files using `reuse annotate`.
 
@@ -24,18 +75,22 @@ def add_headers_to_files(
     existing headers rather than duplicating them.
 
     Args:
-        files: the files to annotate, relative to the repo root.
-        year: the year or year range to include in the header.
-        copyright_holder: the copyright holder to include in the header.
-        license_id: the SPDX identifier for the license.
-        use_uv: if true, invoke reuse with `uv run reuse` instead of just `reuse`.
-        check: passed through to the `check` parameter of `subprocess.run`.
+        files: The files to annotate, relative to the repo root.
+        year: The year or year range to include in the header.
+        copyright_holder: The copyright holder to include in the header.
+        license_id: The SPDX identifier for the license.
+        use_uv: If true, invoke reuse with `uv run reuse` instead of just `reuse`. Defaults to False.
+        check: Passed through to the `check` parameter of `subprocess.run`. Defaults to True.
+        overwrite_copyright_lines: If True, use `strip_copyright_lines` to override copyright lines. Defaults to False.
 
     Returns:
         A subprocess.CompletedProcess instance containing information about the invocation of `reuse annotate`.
     """
     if not files:
         raise ValueError("No files provided to `add_headers_to_files`.")
+
+    if overwrite_copyright_lines:
+        strip_copyright_lines(files=files, copyright_holder=copyright_holder)
 
     reuse_cmd = get_reuse_command(use_uv)
 
@@ -61,15 +116,17 @@ def add_headers_to_group(
     group_id: str,
     use_uv: bool = False,
     check: bool = True,
+    overwrite_copyright_lines: bool = False,
 ) -> subprocess.CompletedProcess:
     """Add or update SPDX license headers in all files specified by a group in the config file.
 
     Args:
-        repo_root: the path to the root of the repo.
-        config: the reuse-license-utils config.
-        group_id: the ID for the group to which headers should be added.
-        use_uv: if true, invoke reuse with `uv run reuse` instead of just `reuse`.
+        repo_root: The path to the root of the repo.
+        config: The reuse-license-utils config.
+        group_id: The ID for the group to which headers should be added.
+        use_uv: If true, invoke reuse with `uv run reuse` instead of just `reuse`.
         check: passed through to the `check` parameter of `subprocess.run`.
+        overwrite_copyright_lines: If True, use `strip_copyright_lines` to override copyright lines. Defaults to False.
 
     Returns:
         A subprocess.CompletedProcess instance containing information about the invocation of `reuse addheader`.
@@ -102,16 +159,23 @@ def add_headers_to_group(
         license_id=license_id,
         use_uv=use_uv,
         check=check,
+        overwrite_copyright_lines=overwrite_copyright_lines,
     )
 
 
-def add_headers(repo_root: Path, config: LicenseUtilsConfig, use_uv: bool = False) -> None:
+def add_headers(
+    repo_root: Path,
+    config: LicenseUtilsConfig,
+    use_uv: bool = False,
+    overwrite_copyright_lines: bool = False,
+) -> None:
     """Add or update SPDX license headers in all files specified by the config file.
 
     Args:
         repo_root: the path to the root of the repo.
         config: the reuse-license-utils config.
         use_uv: if true, invoke reuse with `uv run reuse` instead of just `reuse`.
+        overwrite_copyright_lines: If True, use `strip_copyright_lines` to override copyright lines. Defaults to False.
 
     Returns:
         None
@@ -127,6 +191,7 @@ def add_headers(repo_root: Path, config: LicenseUtilsConfig, use_uv: bool = Fals
             group_id=group_id,
             use_uv=use_uv,
             check=False,
+            overwrite_copyright_lines=overwrite_copyright_lines,
         )
         if completed_process.returncode != 0:
             failed_groups.add(group_id)
