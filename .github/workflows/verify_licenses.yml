@@ -1,4 +1,4 @@
-name: REUSE Compliance
+name: License Verification with REUSE
 
 on:
   push:
