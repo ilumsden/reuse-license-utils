@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: MIT
 
 import subprocess
-import warnings
 from pathlib import Path
 
 from license_expression import ExpressionError, LicenseSymbol, LicenseWithExceptionSymbol, get_spdx_licensing
@@ -80,28 +79,30 @@ def download_licenses(
     existing_license_files = set()
     failed_license_files = set()
 
+    def download_one_license_or_exception(spdx_id: str) -> None:
+        if spdx_id in downloaded_license_files or spdx_id in existing_license_files:
+            return
+        license_path = repo_root / "LICENSES" / f"{parsed_id}.txt"
+
+        if license_path.exists() and license_path.is_file():
+            existing_license_files.add(spdx_id)
+            return
+
+        cmd_obj = subprocess.run([*reuse_cmd, "download", spdx_id], cwd=repo_root, check=False)
+        if cmd_obj.returncode == 0:
+            downloaded_license_files.add(spdx_id)
+        else:
+            failed_license_files.add(spdx_id)
+
     for curr_id in license_ids:
         for entry in parse_spdx_identifier(curr_id):
             if isinstance(entry, tuple):
                 parsed_id, exception_id = entry
             else:
                 parsed_id, exception_id = entry, None
-            license_path = repo_root / "LICENSES" / f"{parsed_id}.txt"
-            if parsed_id not in downloaded_license_files and parsed_id not in existing_license_files:
-                if license_path.exists() and license_path.is_file():
-                    existing_license_files.add(parsed_id)
-                else:
-                    cmd_obj = subprocess.run([*reuse_cmd, "download", parsed_id], cwd=repo_root, check=False)
-                    if cmd_obj.returncode == 0:
-                        downloaded_license_files.add(parsed_id)
-                    else:
-                        failed_license_files.add(parsed_id)
-            if exception_id is not None and parsed_id in (downloaded_license_files | existing_license_files):
-                warning_msg = (
-                    f"Exception text for '{exception_id}' was not added automatically."
-                    f"It is recommended to add it manually to {license_path!s}."
-                )
-                warnings.warn(warning_msg, RuntimeWarning)
+            download_one_license_or_exception(parsed_id)
+            if exception_id is not None:
+                download_one_license_or_exception(exception_id)
 
     failed_license_files -= downloaded_license_files | existing_license_files
 
