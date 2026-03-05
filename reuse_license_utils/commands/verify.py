@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 import argparse
+import sys
 
 from reuse_license_utils.commands.command_base import Command
 from reuse_license_utils.verify import verify_repo
@@ -27,9 +28,13 @@ class VerifyCommand(Command):
         )
 
     def _run_impl(self, args: argparse.Namespace) -> None:
-        verify_repo(
+        subprocess_cmd = verify_repo(
             repo_root=self.repo_root,
             use_uv=args.use_uv,
             quiet=args.quiet,
             check=False,
         )
+        if subprocess_cmd.returncode != 0:
+            print("The repository is NOT REUSE-compliant!", file=sys.stderr)
+            sys.exit(subprocess_cmd.returncode)
+        print("The repository is REUSE-compliant!")
