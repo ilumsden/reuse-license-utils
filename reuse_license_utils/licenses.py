@@ -80,23 +80,18 @@ def download_licenses(
     failed_license_files = set()
 
     def download_one_license_or_exception(spdx_id: str) -> None:
-        print("Trying", spdx_id)
         if spdx_id in downloaded_license_files or spdx_id in existing_license_files:
-            print("Already downloaded or exists")
             return
-        license_path = repo_root / "LICENSES" / f"{parsed_id}.txt"
+        license_path = repo_root / "LICENSES" / f"{spdx_id}.txt"
 
         if license_path.exists() and license_path.is_file():
-            print(f"File for {spdx_id} exists at {license_path}")
             existing_license_files.add(spdx_id)
             return
 
         cmd_obj = subprocess.run([*reuse_cmd, "download", spdx_id], cwd=repo_root, check=False)
         if cmd_obj.returncode == 0:
-            print(f"{spdx_id} downloaded")
             downloaded_license_files.add(spdx_id)
         else:
-            print(f"{spdx_id} not downloaded")
             failed_license_files.add(spdx_id)
 
     for curr_id in license_ids:
