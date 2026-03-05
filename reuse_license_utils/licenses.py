@@ -89,10 +89,10 @@ def download_licenses(repo_root: Path, license_ids: list[str], use_uv: bool = Fa
                     failed_license_files.add(parsed_id)
             if exception_id is not None and parsed_id in downloaded_license_files:
                 license_path = repo_root / "LICENSES" / f"{parsed_id}.txt"
-                warning_msg = {
+                warning_msg = (
                     f"Exception text for '{exception_id}' was not added automatically."
-                    f"It is recommended to add it manually to {license_path!s}."  # noqa: COM812
-                }
+                    f"It is recommended to add it manually to {license_path!s}."
+                )
                 warnings.warn(warning_msg, RuntimeWarning)
 
     failed_license_files = failed_license_files - downloaded_license_files
