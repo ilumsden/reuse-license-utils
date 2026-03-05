@@ -54,7 +54,11 @@ def parse_spdx_identifier(license_id: str) -> list[SingleLicenseEntry]:
     return entries
 
 
-def download_licenses(repo_root: Path, license_ids: list[str], use_uv: bool = False) -> tuple[set[Path], set[Path]]:
+def download_licenses(
+    repo_root: Path,
+    license_ids: list[str],
+    use_uv: bool = False,
+) -> tuple[set[Path], set[Path], set[Path]]:
     """Download license files with REUSE.
 
     Args:
@@ -66,13 +70,14 @@ def download_licenses(repo_root: Path, license_ids: list[str], use_uv: bool = Fa
         ValueError: If no license IDs are provided.
 
     Returns:
-        A 2-tuple of (0) the set of licenses downloaded and (1) the set of licenses that failed to download.
-    """
+        A 3-tuple of (0) the set of licenses downloaded, (1) the set of licenses that already exist, and (2) the set of licenses that failed to download.
+    """  # noqa: E501
     if not license_ids:
         raise ValueError("No license identifiers provided to `download_licenses`.")
 
     reuse_cmd = get_reuse_command(use_uv=use_uv)
     downloaded_license_files = set()
+    existing_license_files = set()
     failed_license_files = set()
 
     for curr_id in license_ids:
@@ -81,20 +86,23 @@ def download_licenses(repo_root: Path, license_ids: list[str], use_uv: bool = Fa
                 parsed_id, exception_id = entry
             else:
                 parsed_id, exception_id = entry, None
-            if parsed_id not in downloaded_license_files:
-                cmd_obj = subprocess.run([*reuse_cmd, "download", parsed_id], cwd=repo_root, check=False)
-                if cmd_obj.returncode == 0:
-                    downloaded_license_files.add(parsed_id)
+            license_path = repo_root / "LICENSES" / f"{parsed_id}.txt"
+            if parsed_id not in downloaded_license_files and parsed_id not in existing_license_files:
+                if license_path.exists() and license_path.is_file():
+                    existing_license_files.add(parsed_id)
                 else:
-                    failed_license_files.add(parsed_id)
-            if exception_id is not None and parsed_id in downloaded_license_files:
-                license_path = repo_root / "LICENSES" / f"{parsed_id}.txt"
+                    cmd_obj = subprocess.run([*reuse_cmd, "download", parsed_id], cwd=repo_root, check=False)
+                    if cmd_obj.returncode == 0:
+                        downloaded_license_files.add(parsed_id)
+                    else:
+                        failed_license_files.add(parsed_id)
+            if exception_id is not None and parsed_id in (downloaded_license_files | existing_license_files):
                 warning_msg = (
                     f"Exception text for '{exception_id}' was not added automatically."
                     f"It is recommended to add it manually to {license_path!s}."
                 )
                 warnings.warn(warning_msg, RuntimeWarning)
 
-    failed_license_files = failed_license_files - downloaded_license_files
+    failed_license_files -= downloaded_license_files | existing_license_files
 
-    return downloaded_license_files, failed_license_files
+    return downloaded_license_files, existing_license_files, failed_license_files

@@ -37,11 +37,16 @@ class DownloadLicensesCommand(Command):
                 license_ids.add(reuse_toml_path_config.license_id)
 
         # Download licenses
-        successful_licenses, failed_licenses = download_licenses(
+        successful_licenses, existing_licenses, failed_licenses = download_licenses(
             repo_root=self.repo_root,
             license_ids=list(license_ids),
             use_uv=args.use_uv,
         )
+
+        print("The following licenses already exist:")
+        for existing_license_name in existing_licenses:
+            print(f"  - {existing_license_name}")
+        print()
 
         # Print information about licenses that were successfully downloaded
         print("The following licenses were successfully downloaded:")
