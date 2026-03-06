@@ -60,6 +60,9 @@ include_patterns = [
 ]
 
 [[tool.reuse-license-utils.reuse_toml_paths]]
+path = ".github/workflows/*.yml"
+
+[[tool.reuse-license-utils.reuse_toml_paths]]
 path = ".gitignore"
 
 [[tool.reuse-license-utils.reuse_toml_paths]]

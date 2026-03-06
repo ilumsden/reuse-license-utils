@@ -22,6 +22,11 @@ REUSE_EXEMPT_PREFIXES: list[str] = [
     "LICENCE",
 ]
 
+# Files with names exactly matching the following are ignored by REUSE
+REUSE_EXEMPT_FILENAMES: list[str] = [
+    "REUSE.toml",
+]
+
 # Files in the following directories are ignored by REUSE
 REUSE_EXEMPT_DIRS: list[str] = [
     ".git",

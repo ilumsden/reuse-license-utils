@@ -6,7 +6,12 @@ from pathlib import Path
 
 import git
 
-from reuse_license_utils.config import REUSE_EXEMPT_DIRS, REUSE_EXEMPT_PREFIXES, LicenseUtilsConfig
+from reuse_license_utils.config import (
+    REUSE_EXEMPT_DIRS,
+    REUSE_EXEMPT_FILENAMES,
+    REUSE_EXEMPT_PREFIXES,
+    LicenseUtilsConfig,
+)
 
 
 def _expand_patterns(repo_root: Path, patterns: list[str]) -> set[Path]:
@@ -68,20 +73,21 @@ def collect_reuse_toml_files(repo_root: Path, config: LicenseUtilsConfig) -> lis
     """
     # Get all files tracked by git using GitPython
     git_repo = git.Repo(repo_root)
-    tracked_files = [Path(entry.path).resolve() for entry in git_repo.index.entries.values()]
+    tracked_files = [(repo_root / entry.path).resolve() for entry in git_repo.index.entries.values()]
     # Get all files that should have headers
     files_with_headers = set()
     for group_id in config.header_groups.keys():
         files_with_headers = files_with_headers | set(collect_header_files(repo_root, config, group_id))
     # Filter out files that should be excluded from REUSE.toml and return the rest
-    return sorted(f for f in tracked_files if f not in files_with_headers and not is_reuse_exempt(f))
+    return sorted(f for f in tracked_files if f not in files_with_headers and not is_reuse_exempt(repo_root, f))
 
 
-def is_reuse_exempt(path: Path) -> bool:
+def is_reuse_exempt(repo_root: Path, path: Path) -> bool:
     """Check if a file is exempted by the REUSE spec (as it is encoded in this tool).
 
     Args:
-        path: the path to the file being checked
+        repo_root: the path to the repository root.
+        path: the path to the file being checked.
 
     Returns:
         True if the file is REUSE-exempt. False otherwise.
@@ -90,6 +96,8 @@ def is_reuse_exempt(path: Path) -> bool:
     # any of the exempt directories. The second part of the condition (after the OR) checks
     # if the file name starts with any of the exempt prefixes. If either condition is true,
     # the path is REUSE-exempt. Otherwise, the path is not REUSE-exempt.
-    return any(path.is_relative_to(exempt_dir) for exempt_dir in REUSE_EXEMPT_DIRS) or any(
-        path.name.upper().startswith(prefix) for prefix in REUSE_EXEMPT_PREFIXES
+    return (
+        any(path.is_relative_to((repo_root / exempt_dir).resolve()) for exempt_dir in REUSE_EXEMPT_DIRS)
+        or any(path.name.upper().startswith(prefix) for prefix in REUSE_EXEMPT_PREFIXES)
+        or any(path.name == exempt_fname for exempt_fname in REUSE_EXEMPT_FILENAMES)
     )
