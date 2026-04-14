@@ -65,6 +65,7 @@ def add_headers_to_files(
     year: str,
     copyright_holder: str,
     license_id: str,
+    style: str | None = None,
     use_uv: bool = False,
     check: bool = True,
     overwrite_copyright_lines: bool = False,
@@ -79,6 +80,7 @@ def add_headers_to_files(
         year: The year or year range to include in the header.
         copyright_holder: The copyright holder to include in the header.
         license_id: The SPDX identifier for the license.
+        style: The style to use for formatting the license headers in the file(s).
         use_uv: If true, invoke reuse with `uv run reuse` instead of just `reuse`. Defaults to False.
         check: Passed through to the `check` parameter of `subprocess.run`. Defaults to True.
         overwrite_copyright_lines: If True, use `strip_copyright_lines` to override copyright lines. Defaults to False.
@@ -94,18 +96,22 @@ def add_headers_to_files(
 
     reuse_cmd = get_reuse_command(use_uv)
 
+    full_cmd = [
+        *reuse_cmd,
+        "annotate",
+        "--year",
+        year,
+        "--copyright",
+        copyright_holder,
+        "--license",
+        license_id,
+    ]
+    if style is not None:
+        full_cmd.extend(["--style", style])
+    full_cmd.extend([str(f) for f in files])
+
     return subprocess.run(
-        [
-            *reuse_cmd,
-            "annotate",
-            "--year",
-            year,
-            "--copyright",
-            copyright_holder,
-            "--license",
-            license_id,
-            *[str(f) for f in files],
-        ],
+        *full_cmd,
         check=check,
     )
 
@@ -157,6 +163,7 @@ def add_headers_to_group(
         year=year,
         copyright_holder=copyright_holder,
         license_id=license_id,
+        style=config.header_groups[group_id].style,
         use_uv=use_uv,
         check=check,
         overwrite_copyright_lines=overwrite_copyright_lines,

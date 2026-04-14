@@ -54,6 +54,12 @@ class HeadersConfig(BaseModel):
     license_id: str | None = None
     """The SPDX identifier for the license (e.g., "Apache-2.0 WITH LLVM-exception")."""
 
+    style: str | None = None
+    """The specific REUSE style to use for this group.
+
+    If not provided, REUSE will try to autodetect the style based on file extension.
+    """
+
 
 class ReuseTomlGenerationPatternConfig(BaseModel):
     """Configuration for a single path in the generation of REUSE.toml."""
