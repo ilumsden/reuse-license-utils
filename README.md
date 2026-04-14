@@ -63,12 +63,13 @@ copyright holders, years, or licenses if needed.
 that cannot carry inline SPDX headers (e.g. `README.md`, `.gitignore`, CI config).
 Each entry corresponds to one `[[annotations]]` block in the generated `REUSE.toml`.
 
-| Field              | Type  | Description                                            |
-| ------------------ | ----- | ------------------------------------------------------ |
-| `path`             | `str` | **Required.** Path or glob to declare in `REUSE.toml`. |
-| `copyright_holder` | `str` | Overrides `default_copyright_holder` for this entry.   |
-| `copyright_years`  | `str` | Overrides `default_copyright_years` for this entry.    |
-| `license_id`       | `str` | Overrides `default_license_id` for this entry.         |
+| Field              | Type  | Description                                               |
+| ------------------ | ----- | --------------------------------------------------------- |
+| `path`             | `str` | **Required.** Path or glob to declare in `REUSE.toml`.    |
+| `precendence`      | `str` | Sets the `precedence` field for the path in `REUSE.toml`. |
+| `copyright_holder` | `str` | Overrides `default_copyright_holder` for this entry.      |
+| `copyright_years`  | `str` | Overrides `default_copyright_years` for this entry.       |
+| `license_id`       | `str` | Overrides `default_license_id` for this entry.            |
 
 ### Example
 

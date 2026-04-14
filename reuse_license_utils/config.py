@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 from pathlib import Path
+from typing import Literal
 
 from pydantic import BaseModel
 
@@ -68,6 +69,16 @@ class ReuseTomlGenerationPatternConfig(BaseModel):
 
     license_id: str | None = None
     """The SPDX identifier for the license."""
+
+    precedence: Literal["closest", "override", "aggregate"] | None = None
+    """The precedence rules that REUSE should use for the REUSE.toml entry.
+
+    Allowed values include:
+
+    - "closest" (default if not provided): first look for licensing info in SPDX headers in the path. Then, fallback to REUSE.toml.
+    - "override": override any licensing information for a path in favor of the entry in REUSE.toml.
+    - "aggregate": merge licensing information in REUSE.toml and SPDX headers.
+    """  # noqa: E501
 
 
 class LicenseUtilsConfig(BaseModel):
