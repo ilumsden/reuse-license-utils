@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 Ian Lumsden
+#
+# SPDX-License-Identifier: MIT
+
 import argparse
 from pathlib import Path
 
@@ -14,8 +18,8 @@ class PrintExpectedCommand(Command):
 
     def _add_subcommand_specific_arguments(self) -> None:
         self.parser.add_argument(
-            "headers-or-toml",
-            value="str",
+            "headers_or_toml",
+            type=str,
             choices=("headers", "toml"),
             help=(
                 "If 'headers', print the files that should contain license headers. "
@@ -25,6 +29,8 @@ class PrintExpectedCommand(Command):
 
     def _print_information(self, files: list[Path], info_header: str) -> None:
         content_for_group = info_header
+        if info_header[-1] != "\n":
+            content_for_group += "\n"
         content_for_group += "\n".join([f"  - {f!s}" for f in files])
         print(content_for_group, end="\n\n")
 

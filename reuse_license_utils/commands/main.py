@@ -7,6 +7,7 @@ import argparse
 from reuse_license_utils.commands.download_licenses import DownloadLicensesCommand
 from reuse_license_utils.commands.generate_reuse import GenerateReuseTomlCommand
 from reuse_license_utils.commands.headers import AddOrUpdateHeadersCommand
+from reuse_license_utils.commands.print_expected import PrintExpectedCommand
 from reuse_license_utils.commands.verify import VerifyCommand
 
 
@@ -18,6 +19,7 @@ def main() -> None:
         AddOrUpdateHeadersCommand(),
         DownloadLicensesCommand(),
         VerifyCommand(),
+        PrintExpectedCommand(),
     ]
     for cmd in cmd_objs:
         cmd.setup(subparsers)
