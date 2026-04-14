@@ -111,7 +111,7 @@ def add_headers_to_files(
     full_cmd.extend([str(f) for f in files])
 
     return subprocess.run(
-        *full_cmd,
+        full_cmd,
         check=check,
     )
 
