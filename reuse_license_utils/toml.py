@@ -80,12 +80,13 @@ def generate_reuse_toml(repo_root: Path, config: LicenseUtilsConfig) -> dict[str
                 "Either the `default_license_id` or the `license_id` field for the REUSE.toml configuration must be provided.",  # noqa: E501
             )
         # Create the entry for this path
-        data["annotations"].append(
-            {
-                "path": path_config.path,
-                "SPDX-FileCopyrightText": f"{copyright_years} {copyright_holder}",
-                "SPDX-License-Identifier": license_id,
-            },
-        )
+        entry = {
+            "path": path_config.path,
+            "SPDX-FileCopyrightText": f"{copyright_years} {copyright_holder}",
+            "SPDX-License-Identifier": license_id,
+        }
+        if path_config.precedence is not None:
+            entry["precendence"] = path_config.precedence
+        data["annotations"].append(entry)
 
     return data

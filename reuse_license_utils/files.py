@@ -72,8 +72,15 @@ def collect_reuse_toml_files(repo_root: Path, config: LicenseUtilsConfig) -> lis
         A sorted list of the files that need to be specified in REUSE.toml.
     """
     # Get all files tracked by git using GitPython
+    # Note that REUSE does not track git submodules. So, we filter out
+    # all submodules from the files tracked by git.
     git_repo = git.Repo(repo_root)
-    tracked_files = [(repo_root / entry.path).resolve() for entry in git_repo.index.entries.values()]
+    submodule_paths = {sub.path for sub in git_repo.submodules}
+    tracked_files = [
+        (repo_root / entry.path).resolve()
+        for entry in git_repo.index.entries.values()
+        if entry.path not in submodule_paths
+    ]
     # Get all files that should have headers
     files_with_headers = set()
     for group_id in config.header_groups.keys():
