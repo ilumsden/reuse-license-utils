@@ -6,11 +6,29 @@ import warnings
 from pathlib import Path
 from typing import Any
 
-from reuse_license_utils.config import LicenseUtilsConfig
+from reuse_license_utils.config import LicenseUtilsConfig, ReuseTomlGenerationPatternConfig
 from reuse_license_utils.verify import verify_reuse_toml_paths
 
 
-def generate_reuse_toml(repo_root: Path, config: LicenseUtilsConfig) -> dict[str, Any]:
+def create_public_domain_license_identifier(config: ReuseTomlGenerationPatternConfig) -> str:
+    """Create the SPDX identifier for public domain software.
+
+    Args:
+        config (ReuseTomlGeneratePatternConfig): the current entry in the reuse-license-utils config's `reuse_toml_paths` field.
+
+    Returns:
+        The created SPDX identifier.
+    """  # noqa: E501
+    if not config.is_public_domain:
+        raise ValueError(
+            "The `create_public_domain_license_identifier` function should not be called when `is_public_domain` is `false`",  # noqa: E501
+        )
+    if config.public_domain_identifier is None:
+        raise ValueError("The `public_domain_identifier` field is required when `is_public_domain` is `true`")
+    return f"LicenseRef-{config.public_domain_identifier}-PublicDomain"
+
+
+def generate_reuse_toml(repo_root: Path, config: LicenseUtilsConfig) -> dict[str, Any]:  # noqa: PLR0912
     """Generate the contents of a REUSE.toml based on the config.
 
     Args:
@@ -55,34 +73,51 @@ def generate_reuse_toml(repo_root: Path, config: LicenseUtilsConfig) -> dict[str
 
     # Add entries for each entry in the config's `reuse_toml_paths` section
     for path_config in config.reuse_toml_paths:
-        # Get and verify the copyright holder
-        copyright_holder = path_config.copyright_holder
-        if path_config.copyright_holder is None:
-            copyright_holder = config.default_copyright_holder
-        if copyright_holder is None:
-            raise ValueError(
-                "Either the `default_copyright_holder` or the `copyright_holder` field for the REUSE.toml configuration must be provided.",  # noqa: E501
-            )
-        # Get and verify the copyright years
-        copyright_years = path_config.copyright_years
-        if path_config.copyright_years is None:
-            copyright_years = config.default_copyright_years
-        if copyright_years is None:
-            raise ValueError(
-                "Either the `default_copyright_years` or the `copyright_years` field for the REUSE.toml configuration must be provided.",  # noqa: E501
-            )
-        # Get and verify the license ID
-        license_id = path_config.license_id
-        if path_config.license_id is None:
-            license_id = config.default_license_id
-        if license_id is None:
-            raise ValueError(
-                "Either the `default_license_id` or the `license_id` field for the REUSE.toml configuration must be provided.",  # noqa: E501
-            )
+        copyright_years = None
+        copyright_holder = None
+        license_id = None
+        # We handle the entry generation differently if the entry is public domain license
+        # (i.e., no standard SPDX identifier) or not.
+        if path_config.is_public_domain:
+            # Get and verify the copyright holder
+            copyright_holder = path_config.copyright_holder
+            if path_config.copyright_holder is None:
+                raise ValueError("The `copyright_holder` field is required when `is_public_domain` is `true`")
+            # Get the copyright years
+            copyright_years = path_config.copyright_years
+            # Build the license_id from the public_domain_identifier field
+            license_id = create_public_domain_license_identifier(path_config)
+        else:
+            # Get and verify the copyright holder
+            copyright_holder = path_config.copyright_holder
+            if path_config.copyright_holder is None:
+                copyright_holder = config.default_copyright_holder
+            if copyright_holder is None:
+                raise ValueError(
+                    "Either the `default_copyright_holder` or the `copyright_holder` field for the REUSE.toml configuration must be provided.",  # noqa: E501
+                )
+            # Get and verify the copyright years
+            copyright_years = path_config.copyright_years
+            if path_config.copyright_years is None:
+                copyright_years = config.default_copyright_years
+            if copyright_years is None:
+                raise ValueError(
+                    "Either the `default_copyright_years` or the `copyright_years` field for the REUSE.toml configuration must be provided.",  # noqa: E501
+                )
+            # Get and verify the license ID
+            license_id = path_config.license_id
+            if path_config.license_id is None:
+                license_id = config.default_license_id
+            if license_id is None:
+                raise ValueError(
+                    "Either the `default_license_id` or the `license_id` field for the REUSE.toml configuration must be provided.",  # noqa: E501
+                )
         # Create the entry for this path
         entry = {
             "path": path_config.path,
-            "SPDX-FileCopyrightText": f"{copyright_years} {copyright_holder}",
+            "SPDX-FileCopyrightText": f"{copyright_years} {copyright_holder}"
+            if copyright_years != "" and copyright_years is not None
+            else copyright_holder,
             "SPDX-License-Identifier": license_id,
         }
         if path_config.precedence is not None:

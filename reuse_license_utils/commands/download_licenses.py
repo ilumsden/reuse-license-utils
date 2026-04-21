@@ -7,6 +7,7 @@ import sys
 
 from reuse_license_utils.commands.command_base import Command
 from reuse_license_utils.licenses import download_licenses
+from reuse_license_utils.toml import create_public_domain_license_identifier
 
 
 class DownloadLicensesCommand(Command):
@@ -24,6 +25,7 @@ class DownloadLicensesCommand(Command):
     def _run_impl(self, args: argparse.Namespace) -> None:
         # Build a full set of license IDs from the config
         license_ids = set()
+        public_domain_ids = set()
         # Add the default license ID to the set if it is not None
         if self.config.default_license_id is not None:
             license_ids.add(self.config.default_license_id)
@@ -33,13 +35,25 @@ class DownloadLicensesCommand(Command):
                 license_ids.add(header_config.license_id)
         # Add any license IDs from the `reuse_toml_paths` section of the config to the set
         for reuse_toml_path_config in self.config.reuse_toml_paths:
-            if reuse_toml_path_config.license_id is not None:
+            if reuse_toml_path_config.is_public_domain:
+                if reuse_toml_path_config.public_domain_license_contents is None:
+                    raise ValueError(
+                        "The `public_domain_license_contents` field is required when `is_public_domain` is `true`",
+                    )
+                public_domain_ids.add(
+                    (
+                        create_public_domain_license_identifier(reuse_toml_path_config),
+                        reuse_toml_path_config.public_domain_license_contents,
+                    ),
+                )
+            elif reuse_toml_path_config.license_id is not None:
                 license_ids.add(reuse_toml_path_config.license_id)
 
         # Download licenses
         successful_licenses, existing_licenses, failed_licenses = download_licenses(
             repo_root=self.repo_root,
             license_ids=list(license_ids),
+            public_domain_ids=list(public_domain_ids),
             use_uv=args.use_uv,
         )
 

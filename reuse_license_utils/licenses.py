@@ -53,9 +53,37 @@ def parse_spdx_identifier(license_id: str) -> list[SingleLicenseEntry]:
     return entries
 
 
+def create_public_domain_license_file(repo_root: Path, license_id: str, public_domain_license_contents: str) -> bool:
+    """Create a file in `<repo_root>/LICENSES` for the provided public-domain license info.
+
+    Args:
+        repo_root (Path): The path to the repository root.
+        license_id (str): The public-domain license identifier.
+        public_domain_license_contents (str): The contents of the generated license file.
+
+    Returns:
+        `True` if the file was newly created or was modified. `False` otherwise.
+    """
+    license_path = repo_root / "LICENSES"
+    license_path.mkdir(parents=True, exist_ok=True)
+    license_path /= f"{license_id}.txt"
+
+    if license_path.exists() and license_path.is_file():
+        expected_contents = " ".join(
+            [line.strip() for line in public_domain_license_contents.splitlines() if line.strip()],
+        )
+        with license_path.open("r", encoding="utf-8") as f:
+            file_text = " ".join([line.strip() for line in f.read().splitlines() if line.strip()])
+        if file_text == expected_contents:
+            return False
+    license_path.write_text(public_domain_license_contents, encoding="utf-8")
+    return True
+
+
 def download_licenses(
     repo_root: Path,
     license_ids: list[str],
+    public_domain_ids: list[tuple[str, str]],
     use_uv: bool = False,
 ) -> tuple[set[Path], set[Path], set[Path]]:
     """Download license files with REUSE.
@@ -63,6 +91,7 @@ def download_licenses(
     Args:
         repo_root (Path): The root of the repository to which the license files will be added.
         license_ids (list[str]): The SDPX identifiers of the licenses to download.
+        public_domain_ids: (list[tuple[str, str]]): The identifiers and license file contents for public domain entries.
         use_uv (bool, optional): If True, invoke REUSE as `uv run reuse` instead of `reuse`. Defaults to False.
 
     Raises:
@@ -103,6 +132,12 @@ def download_licenses(
             download_one_license_or_exception(parsed_id)
             if exception_id is not None:
                 download_one_license_or_exception(exception_id)
+
+    for public_domain_id, public_domain_contents in public_domain_ids:
+        if create_public_domain_license_file(repo_root, public_domain_id, public_domain_contents):
+            downloaded_license_files.add(public_domain_id)
+        else:
+            existing_license_files.add(public_domain_id)
 
     failed_license_files -= downloaded_license_files | existing_license_files
 
