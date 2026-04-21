@@ -68,13 +68,22 @@ class ReuseTomlGenerationPatternConfig(BaseModel):
     """The path or glob to add to REUSE.toml."""
 
     copyright_holder: str | None = None
-    """The name of the copyright holder (e.g., "Global Computing Lab")."""
+    """The name of the copyright holder (e.g., "Global Computing Lab").
+
+    Required if `is_public_domain` is `true`.
+    """
 
     copyright_years: str | None = None
-    """The year or year range for the copyright (e.g., "2025-2026")."""
+    """The year or year range for the copyright (e.g., "2025-2026").
+
+    Ignored if `is_public_domain` is `true`.
+    """
 
     license_id: str | None = None
-    """The SPDX identifier for the license."""
+    """The SPDX identifier for the license.
+
+    Ignored if `is_public_domain` is `true`.
+    """
 
     precedence: Literal["closest", "override", "aggregate"] | None = None
     """The precedence rules that REUSE should use for the REUSE.toml entry.
@@ -85,6 +94,30 @@ class ReuseTomlGenerationPatternConfig(BaseModel):
     - "override": override any licensing information for a path in favor of the entry in REUSE.toml.
     - "aggregate": merge licensing information in REUSE.toml and SPDX headers.
     """  # noqa: E501
+
+    is_public_domain: bool = False
+    """If true, denote the path as public domain software and generate a custom license file in LICENSES.
+
+    If true, the file `<repo_root>/LICENSES/LicenseRef-<public_domain_identifier>-PublicDomain.txt` will be
+    created with the contents specified by the `public_domain_license_contents` field.
+    """
+
+    public_domain_identifier: str | None = None
+    """The identifier for the generated public-domain license.
+
+    If `is_public_domain` is not provided or is set to `false`, this field is ignored.
+    Otherwise, this field is required.
+
+    This field is used to generate the "SPDX-License-Identifier" field of the REUSE.toml file
+    and the generated file in `<repo_root>/LICENSES`.
+    """
+
+    public_domain_license_contents: str | None = None
+    """The contents of the public domain license for this path.
+
+    If `is_public_domain` is not provided or is set to `false`, this field is ignored.
+    If `is_public_domain` is set to `true`, this field is required.
+    """
 
 
 class LicenseUtilsConfig(BaseModel):
