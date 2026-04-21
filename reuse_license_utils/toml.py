@@ -116,7 +116,7 @@ def generate_reuse_toml(repo_root: Path, config: LicenseUtilsConfig) -> dict[str
         entry = {
             "path": path_config.path,
             "SPDX-FileCopyrightText": f"{copyright_years} {copyright_holder}"
-            if copyright_years != "" or copyright_years is None
+            if copyright_years != "" and copyright_years is not None
             else copyright_holder,
             "SPDX-License-Identifier": license_id,
         }
